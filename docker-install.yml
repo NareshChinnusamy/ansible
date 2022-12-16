@@ -1,0 +1,25 @@
+- hosts: Centos
+  become: true
+  vars:
+    ansible_python_interpreter: /bin/python3
+  
+  tasks: 
+  - name: install yum-utils package
+    yum:
+      name: yum-utils
+      state: present
+  - name: Add repository
+    yum_repository:
+      name: docker-ce-repo
+      description: Docker CE YUM repo
+      baseurl: https://download.docker.com/linux/centos/docker-ce.repo
+      state: present
+  - name: Install Docker Packages
+    yum:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose-plugin
