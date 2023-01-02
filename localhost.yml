@@ -2,7 +2,7 @@
   hosts: localhost
 
   tasks:
-  - name: "just execute a ls -lrt command"
+  - name: "just execute a ls -alt command"
     shell: 
      cmd: ls -alt
     args:

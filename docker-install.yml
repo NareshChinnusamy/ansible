@@ -1,25 +1,39 @@
-- hosts: Centos
+- hosts: AmazonLinux
   become: true
   vars:
     ansible_python_interpreter: /bin/python3
+    container_count: 1
+    default_container_name: docker
+    default_container_image: ubuntu
+    default_container_command: sleep 1
   
   tasks: 
-  - name: install yum-utils package
+  - name: install latest version of docker
     yum:
-      name: yum-utils
+      name: docker
+      state: latest
+  - name: Copy file with owner and permission, using symbolic representation
+    copy:
+      src: ./docker-permission.sh
+      dest: /tmp/docker-permission.sh
+      owner: ec2-user
+      group: ec2-user
+      mode: u=rx,g=rx,o=rx
+  - name: Check docker version
+    shell: 
+      "./docker-permission.sh"
+    args:
+      chdir: /tmp/
+  - name: Install Docker Module for Python
+    pip:
+      name: docker
+  - name: Pull default Docker image
+    docker_image:
+      name: "{{ default_container_image }}"
+      source: pull
+  - name: Create default containers
+    docker_container:
+      name: "{{ default_container_name }}{{ item }}"
+      image: "{{ default_container_image }}"
       state: present
-  - name: Add repository
-    yum_repository:
-      name: docker-ce-repo
-      description: Docker CE YUM repo
-      baseurl: https://download.docker.com/linux/centos/docker-ce.repo
-      state: present
-  - name: Install Docker Packages
-    yum:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-      - docker-compose-plugin
+    with_sequence: count={{ container_count }}
