@@ -1,0 +1,48 @@
+- hosts: ubuntu-remote
+  become: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+  - name: Install required system packages
+    apt:
+      pkg:
+        - apt-transport-https
+        - ca-certificates
+        - software-properties-common
+        - python3-pip
+        - python3-setuptools
+
+  - name: Add Docker GPG apt Key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add Docker Repository
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu focal stable
+      state: present
+
+  - name: Update apt and install docker-ce
+    apt:
+      name: docker-ce
+      state: latest
+      update_cache: true
+
+  - name: Install Docker Module for Python
+    pip:
+      name: docker
+
+  - name: Pull Docker image from registry
+    docker_image:
+      name: nginx
+      tag: latest
+      source: pull
+
+  - name: Create and run Docker container
+    docker_container:
+      name: nginx-demo-container
+      image: nginx:latest
+      state: started
+      ports:
+        - "8080:80"
+      tty: true
