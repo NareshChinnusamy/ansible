@@ -1,0 +1,10 @@
+version: '3'
+services:
+  codered:
+    image: nareshhublbj/code-red:2.0.0
+    ports:
+      - 8080:8080
+  nginx:
+    image: nginx
+    ports:
+      - 80:80
