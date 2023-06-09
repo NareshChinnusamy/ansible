@@ -2,7 +2,7 @@
 - name: Run Docker Compose
   hosts: linode
   vars:
-    docker_compose_src: "ansible/artifacts/docker-compose.yml"
+    docker_compose_src: "artifacts/docker-compose.yml"
     docker_compose_dest: "/app-server/docker-compose.yml"
   tasks:
     - name: Get directory facts
