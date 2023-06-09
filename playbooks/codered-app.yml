@@ -1,0 +1,37 @@
+---
+- name: Run Docker Compose
+  hosts: linode
+  vars:
+    docker_compose_src: "/home/naresh/work/code/github/ops-basics/ansible/artifacts/docker-compose.yml"
+    docker_compose_dest: "/app-server/docker-compose.yml"
+  tasks:
+    - name: Get directory facts
+      stat:
+        path: /app-server
+      register: dir_facts
+    - name: Create directory
+      file:
+        path: /app-server
+        state: directory
+      when: not dir_facts.stat.exists
+    - name: Check if Docker Compose deployment is running
+      command: docker-compose ps
+      args:
+        chdir: /app-server
+      register: docker_compose_ps
+      changed_when: false
+      failed_when: false
+    - name: Copy Docker Compose file
+      copy:
+        src: "{{ docker_compose_src }}"
+        dest: "{{ docker_compose_dest }}"
+      when: docker_compose_ps.rc != 0
+    - name: Run Docker Compose
+      community.docker.docker_compose:
+        project_src: /app-server
+        state: present
+      register: output
+      when: docker_compose_ps.rc != 0
+    - name: Show results
+      ansible.builtin.debug:
+        var: output
